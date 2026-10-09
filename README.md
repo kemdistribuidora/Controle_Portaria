@@ -12,14 +12,14 @@ Script, sempre no formato certo.
 
 | Grid | Aba na planilha | O que registra |
 |---|---|---|
-| `Movimentação Frota` | **Movimentação Frota** | Caminhões 16–38 (com placa): hora, KM e °C de saída e de retorno + observação |
+| `Movimentação Frota` | **Movimentacao Frota** | Caminhões 16–38 (com placa): hora, KM e °C de saída e de retorno + observação |
 | `Controle Acesso` | **Controle Acesso** | Cliente (nome fantasia + nota), Fornecedor, Visita (nome + empresa): chegada, saída, placa, assunto/contato |
 
 Salvar grava **só o grid aberto, na data escolhida**. A outra aba e os outros dias ficam
 intactos. A data abre no **dia de hoje** (a portaria lança em tempo real). A tela lembra o
 último grid usado (por PC).
 
-Planilha: <https://docs.google.com/spreadsheets/d/1Bt4SwNhG_eDvclhRsyGIQnbfTMB84ZLsE9N_77frFZM/edit>
+Planilha: <https://docs.google.com/spreadsheets/d/12YepnQuYfgKxaOgmPQSLx8qV6nCFRhsKyvtCts9VJiM/edit>
 (mesma planilha dos dados da operação — as abas novas são criadas pelo script).
 
 ## Como as peças se encaixam
@@ -34,12 +34,12 @@ Planilha: <https://docs.google.com/spreadsheets/d/1Bt4SwNhG_eDvclhRsyGIQnbfTMB84
      │                    Apps Script /exec  (a API, roda como VOCÊ)
      │                          │
      │                          ▼
-     └────────────────►  abas "Movimentação Frota" e "Controle Acesso"
+     └────────────────►  abas "Movimentacao Frota" e "Controle Acesso"
 ```
 
 ## As abas (formato de lista, uma linha por lançamento)
 
-**Movimentação Frota**
+**Movimentacao Frota**
 
 `Data · Frota · Placa · Hora saída · KM saída · °C saída · Hora retorno · KM retorno · °C retorno · KM rodado · Observação · Atualizado em`
 

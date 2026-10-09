@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { criarContexto, criarAbaFalsa } from './helpers/mockGas.mjs';
 
-const ABA_FROTA = 'Movimentação Frota';
+const ABA_FROTA = 'Movimentacao Frota';
 const ABA_ACESSO = 'Controle Acesso';
 const js = v => JSON.parse(JSON.stringify(v)); // objetos do vm são de outro realm
 
@@ -82,7 +82,7 @@ test('getConfig devolve frota com placas, tipos e os dois grids', () => {
   assert.deepEqual(js(cfg.frota[0]), { numero: 16, placa: 'IZP3F14' });
   assert.deepEqual(js(cfg.frota[22]), { numero: 38, placa: 'TRJ5J92' });
   assert.deepEqual(js(cfg.tipos.map(t => t.id)), ['cliente', 'fornecedor', 'visita']);
-  assert.deepEqual(js(cfg.grids.map(g => g.nome)), [ABA_FROTA, ABA_ACESSO]);
+  assert.deepEqual(js(cfg.grids.map(g => g.nome)), ['Movimentação Frota', 'Controle Acesso']);
   assert.match(cfg.hoje, /^\d{2}\/\d{2}\/\d{4}$/);
 });
 

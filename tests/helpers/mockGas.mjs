@@ -9,7 +9,7 @@ const CODIGO_PATH = path.resolve(__dirname, '../../apps-script/Codigo.gs');
 const pad = n => String(n).padStart(2, '0');
 
 /** existente: array de linhas, indice 0 = linha 1 da planilha (base 1). */
-export function criarAbaFalsa({ existente = [], nome = 'Movimentação Frota', colunas = 26 } = {}) {
+export function criarAbaFalsa({ existente = [], nome = 'Movimentacao Frota', colunas = 26 } = {}) {
   const grid = new Map();
   let maxColunas = colunas;
   existente.forEach((linha, indice) => {
