@@ -74,6 +74,13 @@ export function criarAbaFalsa({ existente = [], nome = 'Movimentacao Frota', col
     getRange: (l, c, nl = 1, nc = 1) => range(l, c, nl, nc),
     getMaxColumns: () => maxColunas,
     insertColumnsAfter(_depois, n) { maxColunas += n; },
+    insertColumnBefore(coluna) {
+      for (const linhaDados of grid.values()) {
+        while (linhaDados.length < coluna - 1) linhaDados.push('');
+        linhaDados.splice(coluna - 1, 0, '');
+      }
+      maxColunas += 1;
+    },
     setFrozenRows() {},
     setColumnWidth() {}
   };

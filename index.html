@@ -216,13 +216,14 @@
   .col-temp { width: 7.5%; }
   .col-obs { width: 33%; }
   /* Controle Acesso */
-  .col-tipo { width: 11%; }
-  .col-nome { width: 14%; }
-  .col-empresa { width: 17%; }
-  .col-nota { width: 10%; }
-  .col-aplaca { width: 9%; }
-  .col-ahora { width: 8%; }
-  .col-aobs { width: 18%; }
+  .col-tipo { width: 10%; }
+  .col-nome { width: 12%; }
+  .col-empresa { width: 14%; }
+  .col-nota { width: 9%; }
+  .col-aplaca { width: 8%; }
+  .col-ahora { width: 7.5%; }
+  .col-colab { width: 13%; }
+  .col-aobs { width: 14%; }
   .col-rem { width: 5%; }
 
   /* ---------- Campos ---------- */
@@ -436,6 +437,7 @@
           <th class="col-aplaca">Placa</th>
           <th class="col-ahora">Chegada</th>
           <th class="col-ahora">Saída</th>
+          <th class="col-colab">Colaborador</th>
           <th class="col-aobs">Assunto / Contato</th>
           <th class="col-rem"></th>
         </tr>
@@ -527,12 +529,12 @@
 
     // Só as linhas preenchidas viram uma linha compacta:
     //   frota:  [frota, horaSaida, kmSaida, tempSaida, horaRetorno, kmRetorno, tempRetorno, obs]
-    //   acesso: [tipo, nome, empresa, nota, placa, chegada, saida, obs]
+    //   acesso: [tipo, nome, empresa, nota, placa, chegada, saida, obs, colaborador]
     // Isso encurta muito a URL e o trabalho do servidor.
     function compactar(grid, registros) {
       if (grid === 'acesso') {
         return (registros || []).map(function (r) {
-          return [r.tipo, r.nome, r.empresa, r.nota, r.placa, r.chegada, r.saida, r.obs];
+          return [r.tipo, r.nome, r.empresa, r.nota, r.placa, r.chegada, r.saida, r.obs, r.colaborador];
         });
       }
       var lista = [];
@@ -596,7 +598,6 @@
         { id: 'cliente',    nome: 'Cliente',    cor: '#e8f0fe' },
         { id: 'fornecedor', nome: 'Fornecedor', cor: '#e6f4ea' },
         { id: 'visita',     nome: 'Visita',     cor: '#fff4e5' },
-        { id: 'colaborador', nome: 'Colaborador', cor: '#f3e8fd' },
         { id: 'prestador',  nome: 'Prestador de serviço', cor: '#e0f4f7' },
       ],
       grids: [{ id: 'frota', nome: 'Movimentação Frota' }, { id: 'acesso', nome: 'Controle Acesso' }],
@@ -796,7 +797,7 @@
       var tr = document.createElement('tr');
       tr.className = 'vazio-msg';
       var td = document.createElement('td');
-      td.colSpan = 9;
+      td.colSpan = 10;
       td.textContent = 'Nenhuma entrada registrada neste dia. Use os botões abaixo para registrar.';
       tr.appendChild(td);
       corpo.appendChild(tr);
@@ -828,6 +829,7 @@
     tr.appendChild(tdPlaca);
     tr.appendChild(celulaHora('chegada', tr));
     tr.appendChild(celulaHora('saida', tr));
+    tr.appendChild(celulaTexto('colaborador', 80, 'Veio falar com', tr));
     tr.appendChild(celulaTexto('obs', 200, 'Assunto / contato', tr));
 
     // Remover a linha
@@ -847,7 +849,7 @@
     tdRem.appendChild(btn);
     tr.appendChild(tdRem);
 
-    ['nome', 'empresa', 'nota', 'placa', 'chegada', 'saida', 'obs'].forEach(function (c) {
+    ['nome', 'empresa', 'nota', 'placa', 'chegada', 'saida', 'colaborador', 'obs'].forEach(function (c) {
       var v = r[c] || '';
       tr.querySelector('[data-campo="' + c + '"]').value = (c === 'chegada' || c === 'saida') ? normalizarHora(v) : v;
     });
@@ -1020,11 +1022,9 @@
       nota.disabled = tipo !== 'cliente';
       if (nota.disabled) nota.value = '';
       tr.querySelector('[data-campo="empresa"]').placeholder =
-        tipo === 'cliente' ? 'Nome fantasia' : tipo === 'fornecedor' ? 'Fornecedor' :
-        tipo === 'colaborador' ? 'Setor' : 'Empresa';
+        tipo === 'cliente' ? 'Nome fantasia' : tipo === 'fornecedor' ? 'Fornecedor' : 'Empresa';
       tr.querySelector('[data-campo="nome"]').placeholder =
-        tipo === 'visita' ? 'Nome do visitante' : tipo === 'colaborador' ? 'Nome do colaborador' :
-        tipo === 'prestador' ? 'Nome do prestador' : 'Nome';
+        tipo === 'visita' ? 'Nome do visitante' : tipo === 'prestador' ? 'Nome do prestador' : 'Nome';
       var a = lerLinhaAcesso(tr);
       tr.classList.toggle('em-aberto', a.chegada !== '' && a.saida === '');
     }
@@ -1078,9 +1078,8 @@
   // preenchidos — evita salvar dado pela metade sem o porteiro perceber.
   //   Frota:  saída pede Hora + KM. Retorno (se começou) pede Hora + KM.
   //   Acesso: Tipo + Chegada sempre; Cliente: Nome fantasia + Nota;
-  //           Fornecedor: Fornecedor; Visita / Prestador: Nome + Empresa;
-  //           Colaborador: Nome.
-  function pedeNome(tipo) { return tipo === 'visita' || tipo === 'prestador' || tipo === 'colaborador'; }
+  //           Fornecedor: Fornecedor; Visita / Prestador: Nome + Empresa.
+  function pedeNome(tipo) { return tipo === 'visita' || tipo === 'prestador'; }
 
   function obrigatorios(tr) {
     if (tr.dataset.cam) {
@@ -1096,7 +1095,6 @@
     if (a.tipo === 'cliente') req.push('empresa', 'nota');
     if (a.tipo === 'fornecedor') req.push('empresa');
     if (a.tipo === 'visita' || a.tipo === 'prestador') req.push('nome', 'empresa');
-    if (a.tipo === 'colaborador') req.push('nome');
     return req;
   }
 
@@ -1165,6 +1163,7 @@
       chegada: normalizarHora(valorDe(tr, 'chegada')),
       saida: normalizarHora(valorDe(tr, 'saida')),
       obs: valorDe(tr, 'obs').trim().slice(0, 200),
+      colaborador: valorDe(tr, 'colaborador').trim(),
     };
   }
 
@@ -1176,7 +1175,7 @@
 
   // O tipo sozinho não conta: linha recém-criada e não usada não é alteração.
   function acessoTemAlgo(r) {
-    return !!(r.nome || r.empresa || r.nota || r.placa || r.chegada || r.saida || r.obs);
+    return !!(r.nome || r.empresa || r.nota || r.placa || r.chegada || r.saida || r.obs || r.colaborador);
   }
 
   /** Frota: { "16": {...} } com todos os caminhões. Acesso: só as linhas com dado, na ordem da tela. */

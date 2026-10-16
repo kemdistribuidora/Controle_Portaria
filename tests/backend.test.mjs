@@ -7,7 +7,7 @@ const ABA_ACESSO = 'Controle Acesso';
 const js = v => JSON.parse(JSON.stringify(v)); // objetos do vm são de outro realm
 
 const CF = { DATA: 1, FROTA: 2, PLACA: 3, HORA_SAIDA: 4, KM_SAIDA: 5, TEMP_SAIDA: 6, HORA_RETORNO: 7, KM_RETORNO: 8, TEMP_RETORNO: 9, KM_RODADO: 10, OBS: 11, ATUALIZADO: 12 };
-const CA = { DATA: 1, TIPO: 2, NOME: 3, EMPRESA: 4, NOTA: 5, PLACA: 6, CHEGADA: 7, SAIDA: 8, PERMANENCIA: 9, OBS: 10, ATUALIZADO: 11 };
+const CA = { DATA: 1, TIPO: 2, NOME: 3, EMPRESA: 4, NOTA: 5, PLACA: 6, CHEGADA: 7, SAIDA: 8, PERMANENCIA: 9, COLABORADOR: 10, OBS: 11, ATUALIZADO: 12 };
 
 /** Contexto com as duas abas já com cabeçalho na linha 1. */
 function contextoComAbas({ frota = [], acesso = [], lockFalha = false } = {}) {
@@ -81,7 +81,7 @@ test('getConfig devolve frota com placas, tipos e os dois grids', () => {
   assert.equal(cfg.frota.length, 23);
   assert.deepEqual(js(cfg.frota[0]), { numero: 16, placa: 'IZP3F14' });
   assert.deepEqual(js(cfg.frota[22]), { numero: 38, placa: 'TRJ5J92' });
-  assert.deepEqual(js(cfg.tipos.map(t => t.id)), ['cliente', 'fornecedor', 'visita', 'colaborador', 'prestador']);
+  assert.deepEqual(js(cfg.tipos.map(t => t.id)), ['cliente', 'fornecedor', 'visita', 'prestador']);
   assert.deepEqual(js(cfg.grids.map(g => g.nome)), ['Movimentação Frota', 'Controle Acesso']);
   assert.match(cfg.hoje, /^\d{2}\/\d{2}\/\d{4}$/);
 });
@@ -211,6 +211,37 @@ test('salvarDia acesso grava tipos, permanencia, ordena por chegada e ignora lin
   assert.equal(linhas[1][CA.NOTA - 1], '');          // nota só para cliente
   assert.equal(linhas[1][CA.PERMANENCIA - 1], '');   // ainda no local
   assert.equal(linhas[2][CA.PERMANENCIA - 1], '1:30');
+});
+
+test('salvarDia acesso grava e relê o colaborador procurado', () => {
+  const { abas, ctx } = contextoComAbas();
+  const dados = JSON.stringify([['prestador', 'Rui', 'Elétrica Z', '', '', '08:00', '', 'Manutenção', 'Carlos']]);
+  assert.equal(JSON.parse(ctx.doGet({ parameter: { acao: 'salvar', data: '15/07/2026', grid: 'acesso', dados } })._texto).ok, true);
+  const aba = abas[ABA_ACESSO];
+  assert.equal(aba.getRange(2, CA.TIPO).getValue(), 'Prestador de serviço');
+  assert.equal(aba.getRange(2, CA.COLABORADOR).getValue(), 'Carlos');
+  assert.equal(aba.getRange(2, CA.OBS).getValue(), 'Manutenção');
+  assert.equal(ctx.carregarDia('15/07/2026', 'acesso').registros[0].colaborador, 'Carlos');
+});
+
+test('aba Controle Acesso antiga (sem Colaborador) ganha a coluna sem desalinhar', () => {
+  const cabAntigo = ['Data', 'Tipo', 'Nome', 'Empresa / Nome fantasia', 'Nota fiscal', 'Placa',
+                     'Chegada', 'Saída', 'Permanência', 'Observação', 'Atualizado em'];
+  const antiga = ['14/07/2026', 'Visita', 'Ana', 'Contab', '', '', '09:00', '10:00', '1:00', 'Reunião', '14/07/2026 10:00'];
+  const abas = {
+    [ABA_FROTA]: criarAbaFalsa({ nome: ABA_FROTA, existente: [['Data']] }),
+    [ABA_ACESSO]: criarAbaFalsa({ nome: ABA_ACESSO, existente: [cabAntigo, antiga] }),
+  };
+  const ctx = criarContexto({ abas });
+  const r = ctx.carregarDia('14/07/2026', 'acesso').registros[0];
+  assert.equal(r.obs, 'Reunião');
+  assert.equal(r.colaborador, '');
+  const aba = abas[ABA_ACESSO];
+  assert.equal(aba.getRange(1, CA.COLABORADOR).getValue(), 'Colaborador');
+  assert.equal(aba.getRange(1, CA.OBS).getValue(), 'Observação');
+  assert.equal(aba.getRange(2, CA.ATUALIZADO).getValue(), '14/07/2026 10:00');
+  ctx.carregarDia('14/07/2026', 'acesso'); // segunda vez não insere de novo
+  assert.equal(aba.getRange(2, CA.OBS).getValue(), 'Reunião');
 });
 
 test('carregarDia acesso devolve lista com id do tipo', () => {
