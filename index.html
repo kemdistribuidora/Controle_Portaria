@@ -815,7 +815,13 @@
     var sel = document.createElement('select');
     sel.dataset.campo = 'tipo';
     sel.appendChild(new Option('', ''));
-    CFG.tipos.forEach(function (t) { sel.appendChild(new Option(t.nome, t.id)); });
+    // Nome longo ("Prestador de serviço") não cabe na coluna: mostra só a 1ª palavra.
+    // O nome completo continua no botão, no title e na planilha.
+    CFG.tipos.forEach(function (t) {
+      var opt = new Option(t.nome.length > 12 ? t.nome.split(' ')[0] : t.nome, t.id);
+      opt.title = t.nome;
+      sel.appendChild(opt);
+    });
     sel.value = r.tipo || '';
     sel.addEventListener('change', function () { marcarSujo(); atualizarLinha(tr); });
     tdTipo.appendChild(sel);
@@ -1017,6 +1023,7 @@
       var tipo = tr.querySelector('[data-campo="tipo"]').value;
       var t = tipoPorId(tipo);
       tr.querySelector('td.tipo').style.background = t ? t.cor : '';
+      tr.querySelector('[data-campo="tipo"]').title = t ? t.nome : '';
       // Nota só existe para cliente (retirada): para os outros, fica desabilitada e limpa.
       var nota = tr.querySelector('[data-campo="nota"]');
       nota.disabled = tipo !== 'cliente';
