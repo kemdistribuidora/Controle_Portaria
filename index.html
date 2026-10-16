@@ -459,7 +459,7 @@
      Cole abaixo o link /exec do Web App do Apps Script. Enquanto
      estiver vazio, a página roda em MODO PREVIEW (nada é gravado).
      ================================================================ */
-  var API_URL = 'https://script.google.com/macros/s/AKfycbzk38s0ADEVlcu7qCgwWsrQTDMYmwkj4WxDoV5o3J4eBziuhH7yE6lvzz2WsvVNcdmFWw/exec';
+  var API_URL = 'https://script.google.com/macros/s/AKfycbx9ZvsxE7kNJcYpXVmujs0p7cs5b_lsHSSsXQCYT7uvl0i4Vbzx-KYScfZNDRJYcoFZFw/exec';
   // Seam de teste: em produção __API_URL__ nunca é definido.
   if (typeof window.__API_URL__ === 'string') API_URL = window.__API_URL__;
 
@@ -596,6 +596,8 @@
         { id: 'cliente',    nome: 'Cliente',    cor: '#e8f0fe' },
         { id: 'fornecedor', nome: 'Fornecedor', cor: '#e6f4ea' },
         { id: 'visita',     nome: 'Visita',     cor: '#fff4e5' },
+        { id: 'colaborador', nome: 'Colaborador', cor: '#f3e8fd' },
+        { id: 'prestador',  nome: 'Prestador de serviço', cor: '#e0f4f7' },
       ],
       grids: [{ id: 'frota', nome: 'Movimentação Frota' }, { id: 'acesso', nome: 'Controle Acesso' }],
       hoje: new Date().toLocaleDateString('pt-BR'),
@@ -772,7 +774,7 @@
         tr.querySelector('[data-campo="chegada"]').value = horaAgora();
         atualizarLinha(tr);
         marcarSujo();
-        tr.querySelector(t.id === 'visita' ? '[data-campo="nome"]' : '[data-campo="empresa"]').focus();
+        tr.querySelector(pedeNome(t.id) ? '[data-campo="nome"]' : '[data-campo="empresa"]').focus();
       });
       acoes.appendChild(btn);
     });
@@ -1018,8 +1020,11 @@
       nota.disabled = tipo !== 'cliente';
       if (nota.disabled) nota.value = '';
       tr.querySelector('[data-campo="empresa"]').placeholder =
-        tipo === 'cliente' ? 'Nome fantasia' : tipo === 'fornecedor' ? 'Fornecedor' : 'Empresa';
-      tr.querySelector('[data-campo="nome"]').placeholder = tipo === 'visita' ? 'Nome do visitante' : 'Nome';
+        tipo === 'cliente' ? 'Nome fantasia' : tipo === 'fornecedor' ? 'Fornecedor' :
+        tipo === 'colaborador' ? 'Setor' : 'Empresa';
+      tr.querySelector('[data-campo="nome"]').placeholder =
+        tipo === 'visita' ? 'Nome do visitante' : tipo === 'colaborador' ? 'Nome do colaborador' :
+        tipo === 'prestador' ? 'Nome do prestador' : 'Nome';
       var a = lerLinhaAcesso(tr);
       tr.classList.toggle('em-aberto', a.chegada !== '' && a.saida === '');
     }
@@ -1073,7 +1078,10 @@
   // preenchidos — evita salvar dado pela metade sem o porteiro perceber.
   //   Frota:  saída pede Hora + KM. Retorno (se começou) pede Hora + KM.
   //   Acesso: Tipo + Chegada sempre; Cliente: Nome fantasia + Nota;
-  //           Fornecedor: Fornecedor; Visita: Nome + Empresa.
+  //           Fornecedor: Fornecedor; Visita / Prestador: Nome + Empresa;
+  //           Colaborador: Nome.
+  function pedeNome(tipo) { return tipo === 'visita' || tipo === 'prestador' || tipo === 'colaborador'; }
+
   function obrigatorios(tr) {
     if (tr.dataset.cam) {
       var r = lerLinhaFrota(tr);
@@ -1087,7 +1095,8 @@
     var req = ['tipo', 'chegada'];
     if (a.tipo === 'cliente') req.push('empresa', 'nota');
     if (a.tipo === 'fornecedor') req.push('empresa');
-    if (a.tipo === 'visita') req.push('nome', 'empresa');
+    if (a.tipo === 'visita' || a.tipo === 'prestador') req.push('nome', 'empresa');
+    if (a.tipo === 'colaborador') req.push('nome');
     return req;
   }
 

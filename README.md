@@ -1,7 +1,7 @@
 # Controle de Portaria
 
 Tela simples e travada para a portaria registrar a **movimentação da frota** e o **controle de
-acesso** (clientes, fornecedores e visitas), no lugar de preencher as folhas de papel ou o
+acesso** (clientes, fornecedores, visitas, colaboradores e prestadores de serviço), no lugar de preencher as folhas de papel ou o
 Google Sheets direto.
 
 Mesmo modelo do **Grid de Operação**: o porteiro nunca abre a planilha. Abre um link fixo
@@ -13,7 +13,7 @@ Script, sempre no formato certo.
 | Grid | Aba na planilha | O que registra |
 |---|---|---|
 | `Movimentação Frota` | **Movimentacao Frota** | Caminhões 16–38 (com placa): hora, KM e °C de saída e de retorno + observação |
-| `Controle Acesso` | **Controle Acesso** | Cliente (nome fantasia + nota), Fornecedor, Visita (nome + empresa): chegada, saída, placa, assunto/contato |
+| `Controle Acesso` | **Controle Acesso** | Cliente (nome fantasia + nota), Fornecedor, Visita (nome + empresa), Colaborador (nome + setor), Prestador de serviço (nome + empresa): chegada, saída, placa, assunto/contato |
 
 Salvar grava **só o grid aberto, na data escolhida**. A outra aba e os outros dias ficam
 intactos. A data abre no **dia de hoje** (a portaria lança em tempo real). A tela lembra o
@@ -51,16 +51,16 @@ Planilha: <https://docs.google.com/spreadsheets/d/12YepnQuYfgKxaOgmPQSLx8qV6nCFR
 
 `Data · Tipo · Nome · Empresa / Nome fantasia · Nota fiscal · Placa · Chegada · Saída · Permanência · Observação · Atualizado em`
 
-- **Tipo** = Cliente / Fornecedor / Visita. **Permanência** é calculada = Saída − Chegada.
+- **Tipo** = Cliente / Fornecedor / Visita / Colaborador / Prestador de serviço. **Permanência** é calculada = Saída − Chegada.
 - **Nota fiscal** só para Cliente (aceita várias: `123, 124`).
 
 ## Na tela
 
 - **Frota:** obrigatório Hora + KM de saída. Começou o retorno → Hora + KM de retorno.
   KM de retorno menor que o de saída fica em vermelho.
-- **Acesso:** botões `+ Cliente`, `+ Fornecedor`, `+ Visita` criam a linha já com a hora de
+- **Acesso:** botões `+ Cliente`, `+ Fornecedor`, `+ Visita`, `+ Colaborador`, `+ Prestador de serviço` criam a linha já com a hora de
   chegada de agora. Obrigatório: Cliente → nome fantasia + nota; Fornecedor → fornecedor;
-  Visita → nome + empresa. `✕` remove a linha.
+  Visita / Prestador de serviço → nome + empresa; Colaborador → nome (setor opcional). `✕` remove a linha.
 - **Dois cliques** num campo de hora vazio preenchem com a hora atual. **Enter** passa de campo.
 - Faixa **laranja** = em aberto (caminhão na rua / pessoa no local). Preencha o retorno/saída
   depois e salve de novo — regravar o dia substitui, nunca duplica.

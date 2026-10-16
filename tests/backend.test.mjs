@@ -81,7 +81,7 @@ test('getConfig devolve frota com placas, tipos e os dois grids', () => {
   assert.equal(cfg.frota.length, 23);
   assert.deepEqual(js(cfg.frota[0]), { numero: 16, placa: 'IZP3F14' });
   assert.deepEqual(js(cfg.frota[22]), { numero: 38, placa: 'TRJ5J92' });
-  assert.deepEqual(js(cfg.tipos.map(t => t.id)), ['cliente', 'fornecedor', 'visita']);
+  assert.deepEqual(js(cfg.tipos.map(t => t.id)), ['cliente', 'fornecedor', 'visita', 'colaborador', 'prestador']);
   assert.deepEqual(js(cfg.grids.map(g => g.nome)), ['Movimentação Frota', 'Controle Acesso']);
   assert.match(cfg.hoje, /^\d{2}\/\d{2}\/\d{4}$/);
 });
