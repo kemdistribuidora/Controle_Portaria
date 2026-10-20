@@ -6,7 +6,7 @@ const ABA_FROTA = 'Movimentacao Frota';
 const ABA_ACESSO = 'Controle Acesso';
 const js = v => JSON.parse(JSON.stringify(v)); // objetos do vm são de outro realm
 
-const CF = { DATA: 1, FROTA: 2, PLACA: 3, TEMP_CABO: 4, TEMP: 5, HORA_SAIDA: 6, KM_SAIDA: 7, HORA_RETORNO: 8, KM_RETORNO: 9, KM_RODADO: 10, OBS: 11, ATUALIZADO: 12 };
+const CF = { DATA: 1, FROTA: 2, PLACA: 3, CABO: 4, TEMP_CABO: 5, TEMP: 6, HORA_SAIDA: 7, KM_SAIDA: 8, HORA_RETORNO: 9, KM_RETORNO: 10, KM_RODADO: 11, OBS: 12, ATUALIZADO: 13 };
 const CA = { DATA: 1, TIPO: 2, NOME: 3, EMPRESA: 4, NOTA: 5, PLACA: 6, CHEGADA: 7, SAIDA: 8, PERMANENCIA: 9, COLABORADOR: 10, OBS: 11, ATUALIZADO: 12 };
 
 /** Contexto com as duas abas já com cabeçalho na linha 1. */
@@ -99,7 +99,9 @@ test('acharGrid e acharTipo por id ou nome', () => {
 // ---------- Compacto ----------
 test('registrosDeCompacto frota vira mapa por caminhao', () => {
   const ctx = criarContexto();
-  const r = ctx.registrosDeCompacto('frota', JSON.stringify([[16, '-18', '-15', '06:00', 1000, '15:00', 1200, 'ok']]));
+  const r = ctx.registrosDeCompacto('frota', JSON.stringify([[16, 'C7', '-18', '-15', '06:00', 1000, '15:00', 1200, 'ok']]));
+  assert.equal(r['16'].cabo, 'C7');
+  assert.equal(r['16'].temp, '-15');
   assert.equal(r['16'].hora_saida, '06:00');
   assert.equal(r['16'].km_retorno, 1200);
   assert.equal(r['16'].obs, 'ok');
@@ -123,7 +125,8 @@ test('prepararAbas cria as duas abas com cabecalho na linha 1', () => {
   const ctx = criarContexto({ abas });
   const nomes = ctx.prepararAbas();
   assert.deepEqual(Array.from(nomes), [ABA_FROTA, ABA_ACESSO]);
-  assert.equal(abas[ABA_FROTA].getRange(1, 1, 1, 12).getValues()[0][9], 'KM rodado');
+  assert.equal(abas[ABA_FROTA].getRange(1, 1, 1, 13).getValues()[0][10], 'KM rodado');
+  assert.equal(abas[ABA_FROTA].getRange(1, 4).getValue(), 'Cabo');
   assert.equal(abas[ABA_ACESSO].getRange(1, 1, 1, 11).getValues()[0][8], 'Permanência');
 });
 
@@ -150,8 +153,8 @@ test('salvarDia frota grava placa, KM rodado e so caminhoes preenchidos', () => 
   assert.match(r.mensagem, /2 lançamento\(s\) salvos/);
   const aba = abas[ABA_FROTA];
   assert.equal(aba.getLastRow(), 3);
-  const l1 = aba.getRange(2, 1, 1, 12).getValues()[0];
-  const l2 = aba.getRange(3, 1, 1, 12).getValues()[0];
+  const l1 = aba.getRange(2, 1, 1, 13).getValues()[0];
+  const l2 = aba.getRange(3, 1, 1, 13).getValues()[0];
   assert.equal(l1[CF.FROTA - 1], 16);                 // ordenado por caminhão
   assert.equal(l1[CF.KM_RODADO - 1], '');             // sem retorno ainda
   assert.equal(l2[CF.PLACA - 1], 'JBO7A46');
@@ -161,9 +164,10 @@ test('salvarDia frota grava placa, KM rodado e so caminhoes preenchidos', () => 
 
 test('salvarDia frota e carregarDia ida e volta', () => {
   const { ctx } = contextoComAbas();
-  ctx.salvarDia({ data: '15/07/2026', grid: 'frota', registros: { 33: { hora_saida: '07:00', km_saida: 9, temp_cabo: '3', obs: 'Carregado' } } });
+  ctx.salvarDia({ data: '15/07/2026', grid: 'frota', registros: { 33: { hora_saida: '07:00', km_saida: 9, cabo: ' C2 ', temp_cabo: '3', obs: 'Carregado' } } });
   const r = ctx.carregarDia('15/07/2026', 'frota');
   assert.equal(r.temDados, true);
+  assert.equal(r.registros['33'].cabo, 'C2');
   assert.equal(r.registros['33'].km_saida, 9);
   assert.equal(r.registros['33'].temp_cabo, 3);
   assert.equal(r.registros['33'].obs, 'Carregado');
@@ -244,7 +248,30 @@ test('aba Controle Acesso antiga (sem Colaborador) ganha a coluna sem desalinhar
   assert.equal(aba.getRange(2, CA.OBS).getValue(), 'Reunião');
 });
 
-test('aba Movimentacao Frota antiga (°C saída/retorno) vira °C Cabo/°C sem desalinhar', () => {
+test('aba Movimentacao Frota com °C Cabo ganha a coluna Cabo sem desalinhar', () => {
+  const cabAntigo = ['Data', 'Frota', 'Placa', '°C Cabo', '°C', 'Hora saída', 'KM saída',
+                     'Hora retorno', 'KM retorno', 'KM rodado', 'Observação', 'Atualizado em'];
+  const antiga = ['20/10/2026', '17', 'IZX8D96', '-18,5', '-12', '06:00', '1000', '12:00', '1200', '200', 'ok', '20/10/2026 12:28'];
+  const abas = {
+    [ABA_FROTA]: criarAbaFalsa({ nome: ABA_FROTA, existente: [cabAntigo, antiga] }),
+    [ABA_ACESSO]: criarAbaFalsa({ nome: ABA_ACESSO, existente: [['Data']] }),
+  };
+  const ctx = criarContexto({ abas });
+  const r = js(ctx.carregarDia('20/10/2026', 'frota').registros['17']);
+  assert.equal(r.cabo, '');
+  assert.equal(r.temp_cabo, -18.5);
+  assert.equal(r.temp, -12);
+  assert.equal(r.hora_saida, '06:00');
+  assert.equal(r.km_retorno, 1200);
+  assert.equal(r.obs, 'ok');
+  const aba = abas[ABA_FROTA];
+  assert.equal(aba.getRange(1, CF.CABO).getValue(), 'Cabo');
+  assert.equal(aba.getRange(2, CF.ATUALIZADO).getValue(), '20/10/2026 12:28');
+  ctx.carregarDia('20/10/2026', 'frota'); // segunda vez não insere de novo
+  assert.equal(aba.getRange(2, CF.HORA_SAIDA).getValue(), '06:00');
+});
+
+test('aba Movimentacao Frota antiga (°C saída/retorno) vira Cabo/°C/°C sem desalinhar', () => {
   const cabAntigo = ['Data', 'Frota', 'Placa', 'Hora saída', 'KM saída', '°C saída',
                      'Hora retorno', 'KM retorno', '°C retorno', 'KM rodado', 'Observação', 'Atualizado em'];
   const antiga = ['16/10/2026', '16', 'IZP3F14', '11:11', '1111', '-18,5', '12:00', '1200', '-12', '89', 'ok', '16/10/2026 12:28'];
@@ -262,8 +289,10 @@ test('aba Movimentacao Frota antiga (°C saída/retorno) vira °C Cabo/°C sem d
   assert.equal(r.km_retorno, 1200);
   assert.equal(r.obs, 'ok');
   const aba = abas[ABA_FROTA];
-  assert.equal(aba.getRange(1, CF.TEMP_CABO).getValue(), '°C Cabo');
+  assert.equal(aba.getRange(1, CF.CABO).getValue(), 'Cabo');
+  assert.equal(aba.getRange(1, CF.TEMP_CABO).getValue(), '°C');
   assert.equal(aba.getRange(1, CF.HORA_SAIDA).getValue(), 'Hora saída');
+  assert.equal(aba.getRange(2, CF.OBS).getValue(), 'ok');
   ctx.carregarDia('16/10/2026', 'frota'); // segunda vez não reordena de novo
   assert.equal(aba.getRange(2, CF.HORA_SAIDA).getValue(), '11:11');
 });
@@ -324,7 +353,7 @@ test('doGet acao=salvar grava acesso e responde numa unica ida', () => {
 
 test('doGet acao=salvar grava frota', () => {
   const { abas, ctx } = contextoComAbas();
-  const dados = JSON.stringify([[25, '', '', '06:00', 100, '', '', '']]);
+  const dados = JSON.stringify([[25, '', '', '', '06:00', 100, '', '', '']]);
   const corpo = JSON.parse(ctx.doGet({ parameter: { acao: 'salvar', data: '15/07/2026', grid: 'frota', dados } })._texto);
   assert.equal(corpo.ok, true);
   assert.equal(abas[ABA_FROTA].getRange(2, CF.PLACA).getValue(), 'JCR1B70');

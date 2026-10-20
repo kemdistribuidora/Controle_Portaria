@@ -214,7 +214,8 @@
   .col-hora { width: 8.5%; }
   .col-km { width: 10%; }
   .col-temp { width: 7.5%; }
-  .col-obs { width: 33%; }
+  .col-cabo { width: 8%; }
+  .col-obs { width: 25%; }
   /* Controle Acesso */
   .col-tipo { width: 10%; }
   .col-nome { width: 12%; }
@@ -404,7 +405,8 @@
       <tr>
         <th class="cam">Frota</th>
         <th class="col-placa">Placa</th>
-        <th class="col-temp">°C Cabo</th>
+        <th class="col-cabo">Cabo</th>
+        <th class="col-temp">°C</th>
         <th class="col-temp">°C</th>
         <th class="col-hora">Hora saída</th>
         <th class="col-km">KM saída</th>
@@ -454,7 +456,7 @@
      Cole abaixo o link /exec do Web App do Apps Script. Enquanto
      estiver vazio, a página roda em MODO PREVIEW (nada é gravado).
      ================================================================ */
-  var API_URL = 'https://script.google.com/macros/s/AKfycbyekzj_vbndQLymaUQGSaKMuilX8T3RnBjXE-j7AlBnb8RjAitau6gXLmEGt0FfKzGpXg/exec';
+  var API_URL = 'https://script.google.com/macros/s/AKfycbyab9BmzmmmLiJtDSSMjNLlZgkAKGYKdBzbs6aVzyDnPjWqGdieBMwBQDiRZbUCQdGb7A/exec';
   // Seam de teste: em produção __API_URL__ nunca é definido.
   if (typeof window.__API_URL__ === 'string') API_URL = window.__API_URL__;
 
@@ -521,7 +523,7 @@
     }
 
     // Só as linhas preenchidas viram uma linha compacta:
-    //   frota:  [frota, tempCabo, temp, horaSaida, kmSaida, horaRetorno, kmRetorno, obs]
+    //   frota:  [frota, cabo, tempCabo, temp, horaSaida, kmSaida, horaRetorno, kmRetorno, obs]
     //   acesso: [tipo, nome, empresa, nota, placa, chegada, saida, obs, colaborador]
     // Isso encurta muito a URL e o trabalho do servidor.
     function compactar(grid, registros) {
@@ -534,7 +536,7 @@
       Object.keys(registros || {}).forEach(function (cam) {
         var r = registros[cam] || {};
         if (!frotaTemAlgo(r)) return;
-        lista.push([Number(cam), r.temp_cabo, r.temp, r.hora_saida, r.km_saida,
+        lista.push([Number(cam), r.cabo, r.temp_cabo, r.temp, r.hora_saida, r.km_saida,
                     r.hora_retorno, r.km_retorno, r.obs]);
       });
       return lista;
@@ -739,7 +741,8 @@
       tdPlaca.textContent = f.placa;
       tr.appendChild(tdPlaca);
 
-      // °C Cabo e °C, depois saída e retorno: hora, KM. KM rodado é calculado no Apps Script.
+      // Cabo, °C e °C, depois saída e retorno: hora, KM. KM rodado é calculado no Apps Script.
+      tr.appendChild(celulaTexto('cabo', 20, 'Cabo', tr));
       tr.appendChild(celulaTemp('temp_cabo', tr));
       tr.appendChild(celulaTemp('temp', tr));
       tr.appendChild(celulaHora('hora_saida', tr));
@@ -1066,6 +1069,7 @@
       ['temp_cabo', 'temp'].forEach(function (c) {
         tr.querySelector('[data-campo="' + c + '"]').value = r[c] == null || r[c] === '' ? '' : String(r[c]).replace('.', ',');
       });
+      tr.querySelector('[data-campo="cabo"]').value = (r.cabo || '').slice(0, 20);
       tr.querySelector('[data-campo="obs"]').value = (r.obs || '').slice(0, 200);
       atualizarLinha(tr);
     });
@@ -1102,6 +1106,7 @@
     return {
       hora_saida: normalizarHora(valorDe(tr, 'hora_saida')),
       km_saida: valorDe(tr, 'km_saida'),
+      cabo: valorDe(tr, 'cabo').trim().slice(0, 20),
       temp_cabo: valorDe(tr, 'temp_cabo').replace(',', '.'),
       hora_retorno: normalizarHora(valorDe(tr, 'hora_retorno')),
       km_retorno: valorDe(tr, 'km_retorno'),
@@ -1125,7 +1130,7 @@
   }
 
   function frotaTemAlgo(r) {
-    return !!(r.hora_saida || r.hora_retorno || r.obs ||
+    return !!(r.cabo || r.hora_saida || r.hora_retorno || r.obs ||
       (r.km_saida !== '' && r.km_saida != null) || (r.km_retorno !== '' && r.km_retorno != null) ||
       (r.temp_cabo !== '' && r.temp_cabo != null) || (r.temp !== '' && r.temp != null));
   }
