@@ -1083,7 +1083,7 @@
 
   // Linha "em uso" (algum campo preenchido) precisa dos campos obrigatórios
   // preenchidos — evita salvar dado pela metade sem o porteiro perceber.
-  //   Frota:  saída pede Hora + KM. Retorno (se começou) pede Hora + KM.
+  //   Frota:  saída pede KM. Retorno (se começou) pede Hora + KM.
   //   Acesso: Tipo + Chegada sempre; Cliente: Nome fantasia + Nota;
   //           Fornecedor: Fornecedor; Visita / Prestador: Nome + Empresa.
   function pedeNome(tipo) { return tipo === 'visita' || tipo === 'prestador'; }
@@ -1092,7 +1092,7 @@
     if (tr.dataset.cam) {
       var r = lerLinhaFrota(tr);
       if (!frotaTemAlgo(r)) return [];
-      var lista = ['hora_saida', 'km_saida'];
+      var lista = ['km_saida'];
       if (r.hora_retorno || r.km_retorno !== '' || r.temp_retorno !== '') lista.push('hora_retorno', 'km_retorno');
       return lista;
     }

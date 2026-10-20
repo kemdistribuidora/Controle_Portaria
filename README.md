@@ -58,7 +58,7 @@ Planilha: <https://docs.google.com/spreadsheets/d/12YepnQuYfgKxaOgmPQSLx8qV6nCFR
 
 ## Na tela
 
-- **Frota:** obrigatório Hora + KM de saída. Começou o retorno → Hora + KM de retorno.
+- **Frota:** obrigatório KM de saída. Começou o retorno → Hora + KM de retorno.
   KM de retorno menor que o de saída fica em vermelho.
 - **Acesso:** botões `+ Cliente`, `+ Fornecedor`, `+ Visita`, `+ Prestador de serviço` criam a linha já com a hora de
   chegada de agora. Obrigatório: Cliente → nome fantasia + nota; Fornecedor → fornecedor;
