@@ -12,7 +12,7 @@ Script, sempre no formato certo.
 
 | Grid | Aba na planilha | O que registra |
 |---|---|---|
-| `Movimentação Frota` | **Movimentacao Frota** | Caminhões 16–38 (com placa): hora, KM e °C de saída e de retorno + observação |
+| `Movimentação Frota` | **Movimentacao Frota** | Caminhões 16–38 (com placa): °C Cabo, °C, hora e KM de saída e de retorno + observação |
 | `Controle Acesso` | **Controle Acesso** | Cliente (nome fantasia + nota), Fornecedor, Visita (nome + empresa), Prestador de serviço (nome + empresa): chegada, saída, placa, colaborador procurado, assunto/contato |
 
 Salvar grava **só o grid aberto, na data escolhida**. A outra aba e os outros dias ficam
@@ -41,7 +41,7 @@ Planilha: <https://docs.google.com/spreadsheets/d/12YepnQuYfgKxaOgmPQSLx8qV6nCFR
 
 **Movimentacao Frota**
 
-`Data · Frota · Placa · Hora saída · KM saída · °C saída · Hora retorno · KM retorno · °C retorno · KM rodado · Observação · Atualizado em`
+`Data · Frota · Placa · °C Cabo · °C · Hora saída · KM saída · Hora retorno · KM retorno · KM rodado · Observação · Atualizado em`
 
 - **KM rodado** é calculado pelo script = KM retorno − KM saída.
 - **°C** só se o veículo estiver carregado. Aceita negativo e uma casa (`-18,5`).

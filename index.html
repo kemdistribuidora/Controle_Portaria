@@ -411,12 +411,12 @@
       <tr>
         <th class="cam">Frota</th>
         <th class="col-placa">Placa</th>
+        <th class="col-temp">°C Cabo</th>
+        <th class="col-temp">°C</th>
         <th class="col-hora">Hora saída</th>
         <th class="col-km">KM saída</th>
-        <th class="col-temp">°C saída</th>
         <th class="col-hora retorno">Hora retorno</th>
         <th class="col-km retorno">KM retorno</th>
-        <th class="col-temp retorno">°C retorno</th>
         <th class="col-obs">Observação</th>
       </tr>
     </thead>
@@ -528,7 +528,7 @@
     }
 
     // Só as linhas preenchidas viram uma linha compacta:
-    //   frota:  [frota, horaSaida, kmSaida, tempSaida, horaRetorno, kmRetorno, tempRetorno, obs]
+    //   frota:  [frota, tempCabo, temp, horaSaida, kmSaida, horaRetorno, kmRetorno, obs]
     //   acesso: [tipo, nome, empresa, nota, placa, chegada, saida, obs, colaborador]
     // Isso encurta muito a URL e o trabalho do servidor.
     function compactar(grid, registros) {
@@ -541,8 +541,8 @@
       Object.keys(registros || {}).forEach(function (cam) {
         var r = registros[cam] || {};
         if (!frotaTemAlgo(r)) return;
-        lista.push([Number(cam), r.hora_saida, r.km_saida, r.temp_saida,
-                    r.hora_retorno, r.km_retorno, r.temp_retorno, r.obs]);
+        lista.push([Number(cam), r.temp_cabo, r.temp, r.hora_saida, r.km_saida,
+                    r.hora_retorno, r.km_retorno, r.obs]);
       });
       return lista;
     }
@@ -746,13 +746,13 @@
       tdPlaca.textContent = f.placa;
       tr.appendChild(tdPlaca);
 
-      // Saída e retorno: hora, KM, °C. KM rodado é calculado no Apps Script.
+      // °C Cabo e °C, depois saída e retorno: hora, KM. KM rodado é calculado no Apps Script.
+      tr.appendChild(celulaTemp('temp_cabo', tr));
+      tr.appendChild(celulaTemp('temp', tr));
       tr.appendChild(celulaHora('hora_saida', tr));
       tr.appendChild(celulaKm('km_saida', tr));
-      tr.appendChild(celulaTemp('temp_saida', tr));
       tr.appendChild(celulaHora('hora_retorno', tr));
       tr.appendChild(celulaKm('km_retorno', tr));
-      tr.appendChild(celulaTemp('temp_retorno', tr));
       tr.appendChild(celulaTexto('obs', 200, 'Observação', tr));
 
       frag.appendChild(tr);
@@ -1014,7 +1014,7 @@
       var kmErrado = r.km_saida !== '' && r.km_retorno !== '' && Number(r.km_retorno) < Number(r.km_saida);
       kmRet.classList.toggle('invalido', kmErrado);
       kmRet.title = kmErrado ? 'KM de retorno menor que o de saída.' : '';
-      tr.querySelectorAll('[data-campo^="temp_"]').forEach(function (c) {
+      tr.querySelectorAll('[data-campo^="temp"]').forEach(function (c) {
         c.classList.toggle('invalido', c.value !== '' && !tempValida(c.value));
       });
       tr.classList.toggle('preenchida', frotaTemAlgo(r));
@@ -1073,7 +1073,7 @@
       ['km_saida', 'km_retorno'].forEach(function (c) {
         tr.querySelector('[data-campo="' + c + '"]').value = r[c] == null ? '' : String(r[c]).replace(/\D/g, '').slice(0, 7);
       });
-      ['temp_saida', 'temp_retorno'].forEach(function (c) {
+      ['temp_cabo', 'temp'].forEach(function (c) {
         tr.querySelector('[data-campo="' + c + '"]').value = r[c] == null || r[c] === '' ? '' : String(r[c]).replace('.', ',');
       });
       tr.querySelector('[data-campo="obs"]').value = (r.obs || '').slice(0, 200);
@@ -1093,7 +1093,7 @@
       var r = lerLinhaFrota(tr);
       if (!frotaTemAlgo(r)) return [];
       var lista = ['km_saida'];
-      if (r.hora_retorno || r.km_retorno !== '' || r.temp_retorno !== '') lista.push('hora_retorno', 'km_retorno');
+      if (r.hora_retorno || r.km_retorno !== '') lista.push('hora_retorno', 'km_retorno');
       return lista;
     }
     var a = lerLinhaAcesso(tr);
@@ -1152,10 +1152,10 @@
     return {
       hora_saida: normalizarHora(valorDe(tr, 'hora_saida')),
       km_saida: valorDe(tr, 'km_saida'),
-      temp_saida: valorDe(tr, 'temp_saida').replace(',', '.'),
+      temp_cabo: valorDe(tr, 'temp_cabo').replace(',', '.'),
       hora_retorno: normalizarHora(valorDe(tr, 'hora_retorno')),
       km_retorno: valorDe(tr, 'km_retorno'),
-      temp_retorno: valorDe(tr, 'temp_retorno').replace(',', '.'),
+      temp: valorDe(tr, 'temp').replace(',', '.'),
       obs: valorDe(tr, 'obs').trim().slice(0, 200),
     };
   }
@@ -1177,7 +1177,7 @@
   function frotaTemAlgo(r) {
     return !!(r.hora_saida || r.hora_retorno || r.obs ||
       (r.km_saida !== '' && r.km_saida != null) || (r.km_retorno !== '' && r.km_retorno != null) ||
-      (r.temp_saida !== '' && r.temp_saida != null) || (r.temp_retorno !== '' && r.temp_retorno != null));
+      (r.temp_cabo !== '' && r.temp_cabo != null) || (r.temp !== '' && r.temp != null));
   }
 
   // O tipo sozinho não conta: linha recém-criada e não usada não é alteração.
