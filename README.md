@@ -58,11 +58,10 @@ Planilha: <https://docs.google.com/spreadsheets/d/12YepnQuYfgKxaOgmPQSLx8qV6nCFR
 
 ## Na tela
 
-- **Frota:** obrigatório KM de saída. Começou o retorno → Hora + KM de retorno.
-  KM de retorno menor que o de saída fica em vermelho.
+- **Nenhum campo é obrigatório** — o operador digita e se responsabiliza.
+- **Frota:** KM de retorno menor que o de saída fica em vermelho.
 - **Acesso:** botões `+ Cliente`, `+ Fornecedor`, `+ Visita`, `+ Prestador de serviço` criam a linha já com a hora de
-  chegada de agora. Obrigatório: Cliente → nome fantasia + nota; Fornecedor → fornecedor;
-  Visita / Prestador de serviço → nome + empresa. `✕` remove a linha.
+  chegada de agora. `✕` remove a linha.
 - **Dois cliques** num campo de hora vazio preenchem com a hora atual. **Enter** passa de campo.
 - Faixa **laranja** = em aberto (caminhão na rua / pessoa no local). Preencha o retorno/saída
   depois e salve de novo — regravar o dia substitui, nunca duplica.

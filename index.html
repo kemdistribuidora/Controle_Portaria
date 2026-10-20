@@ -272,13 +272,6 @@
     font-weight: bold;
   }
 
-  /* Campo obrigatório vazio numa linha em preenchimento */
-  select.faltando, .hora.faltando, .num.faltando, .txt.faltando {
-    background: var(--aviso-bg);
-    outline: 2px solid var(--erro);
-    outline-offset: -2px;
-  }
-
   /* ---------- Textos (observação, nome, empresa...) ---------- */
   td.cel-txt { padding: 0 6px; }
   input.txt {
@@ -850,7 +843,6 @@
       tr.parentNode.removeChild(tr);
       mostrarVazioAcesso();
       marcarSujo();
-      validarObrigatorios();
     });
     tdRem.appendChild(btn);
     tr.appendChild(tdRem);
@@ -1035,8 +1027,6 @@
       var a = lerLinhaAcesso(tr);
       tr.classList.toggle('em-aberto', a.chegada !== '' && a.saida === '');
     }
-
-    validarObrigatorios(); // atualiza o destaque de campo faltando em tempo real
   }
 
   function tempValida(v) { return /^-?\d{1,2}(,\d)?$/.test(v); }
@@ -1081,50 +1071,10 @@
     });
   }
 
-  // Linha "em uso" (algum campo preenchido) precisa dos campos obrigatórios
-  // preenchidos — evita salvar dado pela metade sem o porteiro perceber.
-  //   Frota:  saída pede KM. Retorno (se começou) pede Hora + KM.
-  //   Acesso: Tipo + Chegada sempre; Cliente: Nome fantasia + Nota;
-  //           Fornecedor: Fornecedor; Visita / Prestador: Nome + Empresa.
+  // Nenhum campo é obrigatório: o operador digita e se responsabiliza.
   function pedeNome(tipo) { return tipo === 'visita' || tipo === 'prestador'; }
 
-  function obrigatorios(tr) {
-    if (tr.dataset.cam) {
-      var r = lerLinhaFrota(tr);
-      if (!frotaTemAlgo(r)) return [];
-      var lista = ['km_saida'];
-      if (r.hora_retorno || r.km_retorno !== '') lista.push('hora_retorno', 'km_retorno');
-      return lista;
-    }
-    var a = lerLinhaAcesso(tr);
-    if (!acessoTemAlgo(a)) return [];
-    var req = ['tipo', 'chegada'];
-    if (a.tipo === 'cliente') req.push('empresa', 'nota');
-    if (a.tipo === 'fornecedor') req.push('empresa');
-    if (a.tipo === 'visita' || a.tipo === 'prestador') req.push('nome', 'empresa');
-    return req;
-  }
-
-  function validarObrigatorios() {
-    var faltando = [];
-    document.querySelectorAll('#corpo-' + gridAtivo + ' tr[data-cam], #corpo-' + gridAtivo + ' tr[data-linha]').forEach(function (tr, i) {
-      var req = obrigatorios(tr);
-      var vazios = req.filter(function (c) { return tr.querySelector('[data-campo="' + c + '"]').value.trim() === ''; });
-      tr.querySelectorAll('[data-campo]').forEach(function (el) {
-        el.classList.toggle('faltando', vazios.indexOf(el.dataset.campo) > -1);
-      });
-      if (vazios.length) faltando.push(tr.dataset.cam ? 'frota ' + tr.dataset.cam : 'linha ' + (i + 1));
-    });
-    return faltando;
-  }
-
   function salvar() {
-    var faltando = validarObrigatorios();
-    if (faltando.length) {
-      travar(false, 'Preencha os campos obrigatórios (em vermelho): ' + faltando.join(', ') + '.', 'erro');
-      return;
-    }
-
     var invalidos = document.querySelectorAll('#corpo-' + gridAtivo + ' .invalido').length;
     if (invalidos && !confirm('Há ' + invalidos + ' campo(s) com valor errado (em vermelho). Salvar mesmo assim?')) return;
 
