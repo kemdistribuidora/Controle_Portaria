@@ -630,6 +630,7 @@
     CFG = res.config;
     // Portaria lança em tempo real: o padrão é o dia de hoje.
     document.getElementById('data').value = paraISO(CFG.hoje);
+    var dataAnterior = document.getElementById('data').value;
     montarBarraGrids();
     montarBotoesAcesso();
 
@@ -644,7 +645,9 @@
     }
 
     document.getElementById('data').addEventListener('change', function () {
-      if (!confirmarDescarte()) { this.value = paraISO(dataAtualBR()); return; }
+      // No 'change' o campo já tem a data nova: volta para a anterior guardada.
+      if (!confirmarDescarte()) { this.value = dataAnterior; return; }
+      dataAnterior = this.value;
       seqSalvar += 1; // qualquer mudança de data invalida salvamentos antigos
       carregar();
     });
